@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Rajdeep Singh | Premium UI/UX Architect & Developer</title>
+    
+    <!-- Preconnect & Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================
+           1. CORE DESIGN SYSTEM & VARIABLES
+           ========================================= */
+        :root {
+            /* Base Colors */
+            --bg-color: #121212;
+            --primary-color: #31511E;
+            --secondary-color: #859F3D;
+            
+            /* Typography Colors */
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --text-inverse: #000000;
+            
+            /* Glassmorphism Metrics */
+            --glass-bg: rgba(25, 25, 25, 0.4);
+            --glass-bg-hover: rgba(40, 40, 40, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-hover: rgba(255, 255, 255, 0.25);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
+            
+            /* Shadows & Kinetics */
+            --shadow-ambient: 0 20px 40px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 30px rgba(133, 159, 61, 0.3);
+            --transition-bounce: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-fast: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* =========================================
+           2. GLOBAL RESET & TYPOGRAPHY
+           ========================================= */
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            cursor: none; /* Enforce Custom Cursor Globally */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        *:focus-visible {
+            outline: 2px dashed var(--secondary-color);
+            outline-offset: 4px;
+        }
+
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.8s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Essential fix for input interactions */
+        input, textarea, select {
+            cursor: auto !important; /* Allow native text cursor on inputs */
+        }
+
+        ::selection { background: var(--secondary-color); color: var(--text-inverse); }
+
+        h1, h2, h3, h4, h5, h6, .display-font { font-family: 'Space Grotesk', sans-serif; }
+        
+        a { text-decoration: none; color: inherit; outline: none; }
+        button, input, textarea, select { font-family: inherit; outline: none; border: none; background: none; }
+        ul, ol { list-style: none; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 20px; border: 3px solid var(--bg-color); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-color); }
+
+        /* Scroll Progress Bar */
+        #scroll-progress {
+            position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%; z-index: 9999999; transition: width 0.1s ease-out; box-shadow: 0 0 10px var(--secondary-color);
+            pointer-events: none;
+        }
+
+        /* =========================================
+           3. PRECISION CUSTOM CURSOR ENGINE
+           ========================================= */
+        .cursor-dot, .cursor-outline {
+            position: fixed; top: 0; left: 0;
+            border-radius: 50%; 
+            z-index: 99999999; /* CRITICAL FIX: Extremely high to stay above modal */
+            pointer-events: none !important; /* CRITICAL FIX: Allows clicking */
+            will-change: transform;
+        }
+        .cursor-dot {
+            width: 8px; height: 8px; 
+            background-color: var(--secondary-color); /* CRITICAL FIX: Green Center */
+            transition: width 0.3s, height 0.3s, opacity 0.3s, background-color 0.3s;
+        }
+        .cursor-outline {
+            width: 45px; height: 45px; border: 1.5px solid #ffffff;
+            transition: width 0.3s ease-out, height 0.3s ease-out, background-color 0.3s, border-color 0.3s;
+            mix-blend-mode: difference;
+        }
+        .cursor-trail {
+            position: fixed; top: 0; left: 0; width: 6px; height: 6px;
+            background: var(--secondary-color); border-radius: 50%;
+            pointer-events: none !important; 
+            z-index: 99999998; opacity: 0;
+            transition: opacity 0.5s ease; mix-blend-mode: screen; will-change: transform;
+        }
+        
+        /* Cursor Hover Dynamics */
+        body.cursor-hover .cursor-outline {
+            width: 90px; height: 90px; background-color: rgba(255, 255, 255, 0.1);
+            border-color: transparent; backdrop-filter: blur(2px);
+        }
+        body.cursor-hover .cursor-dot { width: 0; height: 0; opacity: 0; }
+        
+        /* Cursor Hide over inputs to prevent blocking */
+        body.cursor-hide .cursor-dot, body.cursor-hide .cursor-outline, body.cursor-hide .cursor-trail { 
+            opacity: 0 !important; 
+            transform: scale(0) !important;
+        }
+
+        @media (pointer: coarse) { body { cursor: auto; } .cursor-dot, .cursor-outline, .cursor-trail { display: none !important; } }
+
+        /* =========================================
+           4. DYNAMIC ALIVE BACKGROUND (MESH & CANVAS)
+           ========================================= */
+        .mesh-container {
+            position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none;
+            background: var(--bg-color); transition: background 0.8s ease;
+        }
+        #particle-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.7; pointer-events: none;}
+        
+        .mesh-blob {
+            position: absolute; border-radius: 50%; filter: blur(12vw); opacity: 0.25;
+            will-change: transform; mix-blend-mode: screen;
+            transition: background-color 0.8s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .blob-1 { width: 55vw; height: 55vw; background: var(--primary-color); top: -25%; left: -15%; animation: breathe 18s infinite alternate ease-in-out; }
+        .blob-2 { width: 50vw; height: 50vw; background: var(--secondary-color); bottom: -25%; right: -15%; animation: breathe 22s infinite alternate-reverse ease-in-out; }
+        .blob-3 { width: 40vw; height: 40vw; background: rgba(255,255,255,0.08); top: 25%; left: 25%; animation: wander 30s infinite linear; }
+        
+        .noise-overlay {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.05"/%3E%3C/svg%3E');
+            opacity: 0.5; mix-blend-mode: overlay;
+        }
+
+        @keyframes breathe { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.15) translate(8%, 8%); } }
+        @keyframes wander { 0% { transform: translate(0,0) rotate(0deg); } 33% { transform: translate(12vw, 6vh) rotate(120deg); } 66% { transform: translate(-6vw, 18vh) rotate(240deg); } 100% { transform: translate(0,0) rotate(360deg); } }
+
+        /* =========================================
+           5. PREMIUM UI COMPONENTS & EFFECTS
+           ========================================= */
+        /* Core Spotlight Panel */
+        .glass-panel {
+            position: relative; 
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--shadow-ambient);
+            transition: var(--transition-smooth); z-index: 1;
+            overflow: visible; /* CRITICAL FIX: Ensures hovering doesn't cut edges */
+        }
+        
+        .glass-panel::before {
+            content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+            background: radial-gradient(800px circle at var(--mouse-x, -500px) var(--mouse-y, -500px), rgba(255,255,255,0.08), transparent 40%);
+            transition: opacity 0.5s ease; opacity: 0; pointer-events: none;
+        }
+        .glass-panel::after {
+            content: ''; position: absolute; inset: 0; z-index: -2; border-radius: inherit; padding: 1.5px;
+            background: radial-gradient(600px circle at var(--mouse-x, -500px) var(--mouse-y, -500px), var(--secondary-color), transparent 40%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+        }
+        .glass-panel:hover { transform: translateY(-6px); box-shadow: 0 35px 70px rgba(0,0,0,0.6); border-color: var(--glass-border-hover); }
+        .glass-panel:hover::before, .glass-panel:hover::after { opacity: 1; }
+
+        /* Deep Interactive Buttons */
+        .btn {
+            position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+            padding: 18px 42px; border-radius: 16px; font-weight: 700; font-size: 1.05rem;
+            letter-spacing: 0.5px; z-index: 1; overflow: hidden;
+            transition: var(--transition-fast); will-change: transform; border: 1px solid transparent;
+        }
+        .btn i { transition: transform 0.4s ease; z-index: 2; position: relative; }
+        .btn span { z-index: 2; position: relative; }
+        
+        .btn-primary { background: var(--text-main); color: var(--bg-color); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
+        .btn-primary::before {
+            content: ''; position: absolute; inset: 0; z-index: 0;
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            opacity: 0; transition: opacity 0.4s ease; transform: scale(0.95); border-radius: 16px;
+        }
+        .btn-primary:hover { color: #ffffff; box-shadow: var(--shadow-glow); text-shadow: 0 2px 5px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.3); }
+        .btn-primary:hover::before { opacity: 1; transform: scale(1); }
+        .btn-primary:hover i { transform: translateX(6px) scale(1.1); color: #fff; }
+
+        .btn-glass { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-hover); color: var(--text-main); backdrop-filter: blur(10px); }
+        .btn-glass::before { content: ''; position: absolute; inset: 0; z-index: 0; background: var(--text-main); opacity: 0; transition: opacity 0.4s ease; }
+        .btn-glass:hover { color: var(--bg-color); border-color: #ffffff; box-shadow: 0 15px 30px rgba(255,255,255,0.15); }
+        .btn-glass:hover::before { opacity: 1; }
+        .btn-glass:hover i { transform: translateX(6px); color: var(--bg-color); }
+
+        /* Ripple Kinetic Feedback */
+        .ripple {
+            position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.4);
+            transform: scale(0); animation: ripple-anim 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none; z-index: 1;
+        }
+        @keyframes ripple-anim { 0% { transform: scale(0); opacity: 1; } 100% { transform: scale(4); opacity: 0; } }
+
+        /* =========================================
+           6. ANIMATIONS & REVEALS
+           ========================================= */
+        @keyframes textGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes floatHigh { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-20px) rotate(5deg); } }
+
+        .reveal { opacity: 0; transform: translateY(50px) scale(0.95); filter: blur(10px); transition: opacity 1s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: opacity, transform, filter; }
+        .reveal.active { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        .reveal-left { opacity: 0; transform: translateX(-60px); filter: blur(10px); transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .reveal-left.active { opacity: 1; transform: translateX(0); filter: blur(0); }
+        .reveal-right { opacity: 0; transform: translateX(60px); filter: blur(10px); transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .reveal-right.active { opacity: 1; transform: translateX(0); filter: blur(0); }
+
+        /* =========================================
+           7. LAYOUT & SECTIONS (Grid Architecture)
+           ========================================= */
+        section { padding: clamp(100px, 10vw, 160px) 5%; position: relative; max-width: 1500px; margin: 0 auto; z-index: 10; }
+        .section-header { margin-bottom: clamp(50px, 6vw, 90px); position: relative; }
+        .section-title { font-size: clamp(2.5rem, 6vw, 5.5rem); font-weight: 800; display: flex; align-items: center; gap: 25px; letter-spacing: -1.5px; color: var(--text-main); text-transform: uppercase; line-height: 1.1; }
+        .section-title span { color: transparent; -webkit-text-stroke: 1.5px var(--secondary-color); font-size: 1.1em; font-weight: 800; display: inline-block; }
+        .section-line { height: 3px; width: 0px; background: linear-gradient(90deg, var(--secondary-color), transparent); margin-top: 20px; border-radius: 3px; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .section-header.active .section-line { width: 350px; }
+
+        /* =========================================
+           8. NAVBAR & OVERLAY MENU
+           ========================================= */
+        nav { position: fixed; top: 0; left: 0; right: 0; padding: 25px 5%; z-index: 1000; display: flex; justify-content: space-between; align-items: center; background: transparent; transition: var(--transition-smooth); }
+        nav.scrolled { padding: 15px 5%; background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .logo { font-size: clamp(1.2rem, 2vw, 1.8rem); font-weight: 800; display: flex; align-items: center; gap: 15px; z-index: 1002; position: relative; letter-spacing: 1px;}
+        .logo-box { width: 50px; height: 50px; border-radius: 14px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; color: #fff; box-shadow: var(--shadow-glow); transition: var(--transition-bounce); }
+        .logo:hover .logo-box { transform: rotate(15deg) scale(1.15); border-radius: 20px; }
+        
+        /* Desktop Links */
+        .nav-links { display: flex; gap: 40px; background: var(--glass-bg); padding: 15px 40px; border-radius: 40px; border: 1px solid var(--glass-border); backdrop-filter: blur(15px); }
+        .nav-links a { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; color: var(--text-muted); position: relative; transition: color 0.3s ease; padding: 5px 0; }
+        .nav-links a::after { content: ''; position: absolute; bottom: -5px; left: 50%; width: 6px; height: 6px; background: var(--secondary-color); border-radius: 50%; transform: translateX(-50%) scale(0); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .nav-links a:hover, .nav-links a.active { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .nav-links a:hover::after, .nav-links a.active::after { transform: translateX(-50%) scale(1); box-shadow: 0 0 10px var(--secondary-color); }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle { display: none; background: none; border: none; color: #fff; font-size: 1.8rem; z-index: 1002; cursor: pointer; transition: transform 0.3s; }
+        .menu-toggle:hover { color: var(--secondary-color); transform: scale(1.1); }
+        
+        /* Fullscreen Overlay Menu */
+        .mobile-menu-overlay { position: fixed; inset: 0; background: rgba(18,18,18,0.98); z-index: 1001; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.5s ease; backdrop-filter: blur(30px); }
+        .mobile-menu-overlay.active { opacity: 1; visibility: visible; }
+        .mobile-menu-links { display: flex; flex-direction: column; gap: 30px; text-align: center; }
+        .mobile-menu-links a { font-family: 'Space Grotesk'; font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 2px; transition: all 0.4s; transform: translateY(30px); opacity: 0; }
+        .mobile-menu-overlay.active .mobile-menu-links a { transform: translateY(0); opacity: 1; }
+        .mobile-menu-links a:hover { color: var(--secondary-color); padding-left: 20px; text-shadow: var(--shadow-glow); }
+        .mobile-menu-links a:nth-child(1) { transition-delay: 0.1s; } .mobile-menu-links a:nth-child(2) { transition-delay: 0.2s; } .mobile-menu-links a:nth-child(3) { transition-delay: 0.3s; } .mobile-menu-links a:nth-child(4) { transition-delay: 0.4s; } .mobile-menu-links a:nth-child(5) { transition-delay: 0.5s; } .mobile-menu-links a:nth-child(6) { transition-delay: 0.6s; }
+
+        /* =========================================
+           9. HERO SECTION (Immersive Entry)
+           ========================================= */
+        .hero { min-height: 100vh; display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 60px; padding-top: clamp(100px, 15vh, 150px); position: relative; }
+        .hero-content { position: relative; z-index: 10; }
+        .hero-greeting { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; border-radius: 30px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 0.95rem; color: var(--text-main); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 35px; font-weight: 700; backdrop-filter: blur(10px); }
+        .hero-greeting i { color: var(--secondary-color); font-size: 1.2em; animation: pulseBg 2s infinite; }
+        .hero-content h1 { font-size: clamp(3.5rem, 7vw, 9rem); line-height: 1.05; margin-bottom: 20px; letter-spacing: -3px; font-weight: 800; }
+        .gradient-text { background: linear-gradient(to right, var(--text-main) 20%, var(--secondary-color) 40%, var(--primary-color) 60%, var(--text-main) 80%); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: textGradient 8s linear infinite; display: inline-block; }
+        
+        /* Typewriter Subtitle */
+        .typewriter-container { height: 40px; margin-bottom: 35px; display: flex; align-items: center; }
+        .hero-content h3 { font-size: clamp(1.2rem, 2.5vw, 2rem); color: var(--text-muted); font-weight: 400; letter-spacing: 1px; margin: 0;}
+        .type-cursor { display: inline-block; width: 3px; height: 1.2em; background-color: var(--secondary-color); margin-left: 5px; animation: blink 1s infinite; vertical-align: middle;}
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .hero-content p { font-size: clamp(1rem, 1.5vw, 1.25rem); color: var(--text-muted); line-height: 1.8; margin-bottom: 55px; max-width: 680px; font-weight: 400;}
+        .hero-btns { display: flex; gap: 25px; flex-wrap: wrap;}
+        
+        .hero-visual { position: relative; display: flex; justify-content: center; align-items: center; height: 100%; perspective: 1200px;}
+        .profile-container { width: clamp(280px, 35vw, 480px); height: clamp(280px, 35vw, 480px); position: relative; border-radius: 50%; padding: 30px; transform-style: preserve-3d; transition: transform 0.1s; }
+        .profile-rings { position: absolute; inset: 0; border: 2px dashed rgba(255,255,255,0.15); border-radius: 50%; animation: spinSlowReverse 35s linear infinite; transform: translateZ(-30px);}
+        .profile-rings::before { content: ''; position: absolute; inset: -35px; border: 1px solid var(--secondary-color); border-radius: 50%; animation: spinSlow 25s linear infinite; opacity: 0.4; }
+        .profile-rings::after { content: ''; position: absolute; inset: 35px; border: 3px dotted var(--primary-color); border-radius: 50%; animation: spinSlow 15s linear infinite; opacity: 0.6; transform: translateZ(30px);}
+        @keyframes spinSlow { 100% { transform: rotate(360deg); } } @keyframes spinSlowReverse { 100% { transform: rotate(-360deg); } }
+        
+        .profile-img-wrap { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; position: relative; z-index: 2; box-shadow: inset 0 0 60px rgba(0,0,0,0.6), 0 40px 80px rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.1); transform: translateZ(50px); }
+        .profile-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); filter: contrast(1.1) brightness(0.9); }
+        .profile-container:hover .profile-img { transform: scale(1.12) rotate(-3deg); filter: contrast(1.2) brightness(1); }
+        
+        .floating-badge { position: absolute; padding: clamp(15px, 2vw, 25px); border-radius: 24px; font-size: clamp(1.5rem, 3vw, 2.5rem); z-index: 3; background: rgba(25,25,25,0.7); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 25px 50px rgba(0,0,0,0.5); transition: var(--transition-bounce); }
+        .floating-badge:hover { transform: scale(1.15) !important; border-color: var(--secondary-color); background: var(--text-main); color: var(--bg-color) !important; }
+        .badge-1 { top: 8%; right: -2%; color: var(--secondary-color); animation: floatHigh 6s ease-in-out infinite; transform: translateZ(80px);}
+        .badge-2 { bottom: 12%; left: -8%; color: var(--primary-color); animation: floatHigh 7s ease-in-out infinite 2s; transform: translateZ(100px);}
+
+        /* =========================================
+           10. ABOUT & OPERATIONAL SPECS
+           ========================================= */
+        .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: clamp(20px, 4vw, 40px); }
+        .stat-card { padding: 40px 30px; display: flex; flex-direction: column; gap: 20px; text-align: left; }
+        .stat-icon { width: 85px; height: 85px; border-radius: 24px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; font-size: 2.8rem; color: var(--text-main); margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); transition: var(--transition-bounce); position: relative; overflow: hidden; }
+        .stat-icon::before { content:''; position: absolute; inset:0; background: var(--secondary-color); opacity: 0; transition: opacity 0.4s; border-radius: inherit; z-index: -1;}
+        .stat-card:hover .stat-icon { transform: translateY(-12px) rotate(8deg); border-color: transparent; color: var(--bg-color); box-shadow: var(--shadow-glow);}
+        .stat-card:hover .stat-icon::before { opacity: 1; }
+        
+        .stat-card h3 { font-size: 1.15rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; font-weight: 600;}
+        .stat-card p.highlight { color: #fff; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800; font-family: 'Space Grotesk'; line-height: 1.2; text-shadow: 0 0 20px rgba(255,255,255,0.1); transition: color 0.3s;}
+        .stat-card:hover p.highlight { color: var(--secondary-color); text-shadow: 0 0 25px rgba(133, 159, 61, 0.4);}
+
+        /* =========================================
+           11. SERVICES / EXPERTISE
+           ========================================= */
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: clamp(20px, 4vw, 40px); }
+        .service-card { padding: 40px 30px; display: flex; flex-direction: column; gap: 20px; transition: var(--transition-bounce); position: relative; }
+        .service-card::after { content: ''; position: absolute; top: 0; right: 0; width: 150px; height: 150px; background: radial-gradient(circle, var(--secondary-color) 0%, transparent 70%); opacity: 0; transition: opacity 0.5s; z-index: -1; transform: translate(50%, -50%); border-radius: 50%; filter: blur(30px);}
+        .service-card:hover::after { opacity: 0.15; }
+        .service-icon { font-size: 3rem; color: var(--secondary-color); margin-bottom: 10px; transition: transform 0.4s; }
+        .service-card:hover .service-icon { transform: scale(1.1) translateX(10px); }
+        .service-card h3 { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+        .service-card p { color: var(--text-muted); line-height: 1.7; font-size: 1.1rem; }
+        .service-list { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .service-list li { display: flex; align-items: center; gap: 10px; font-size: 1rem; color: #ddd; font-weight: 500;}
+        .service-list li i { color: var(--secondary-color); font-size: 0.9rem;}
+
+        /* =========================================
+           12. TIMELINE / EXPERIENCE
+           ========================================= */
+        .timeline-container { position: relative; max-width: 1000px; margin: 0 auto; padding: 40px 0; }
+        .timeline-container::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,255,255,0.1); transform: translateX(-50%); }
+        .timeline-item { position: relative; margin-bottom: 60px; width: 50%; padding-right: 50px; left: 0; }
+        .timeline-item:nth-child(even) { left: 50%; padding-right: 0; padding-left: 50px; }
+        
+        .timeline-dot { position: absolute; top: 20px; right: -12px; width: 24px; height: 24px; border-radius: 50%; background: var(--bg-color); border: 4px solid var(--secondary-color); z-index: 2; transition: var(--transition-bounce); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .timeline-item:nth-child(even) .timeline-dot { left: -12px; }
+        .timeline-item:hover .timeline-dot { transform: scale(1.5); background: var(--secondary-color); box-shadow: var(--shadow-glow); }
+        
+        .timeline-content { padding: 40px; position: relative; }
+        .timeline-content::before { content: ''; position: absolute; top: 30px; right: -15px; border-width: 15px 0 15px 15px; border-style: solid; border-color: transparent transparent transparent var(--glass-border); }
+        .timeline-item:nth-child(even) .timeline-content::before { left: -15px; right: auto; border-width: 15px 15px 15px 0; border-color: transparent var(--glass-border) transparent transparent; }
+        
+        .timeline-year { display: inline-block; padding: 8px 16px; background: rgba(133, 159, 61, 0.1); color: var(--secondary-color); border-radius: 20px; font-weight: 800; font-family: 'Space Grotesk'; margin-bottom: 15px; border: 1px solid rgba(133, 159, 61, 0.3);}
+        .timeline-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; color: #fff;}
+        .timeline-company { font-size: 1.1rem; color: var(--primary-color); font-weight: 600; margin-bottom: 15px;}
+        .timeline-desc { color: var(--text-muted); line-height: 1.7; }
+
+        @media(max-width: 768px) {
+            .timeline-container::before { left: 30px; }
+            .timeline-item { width: 100%; padding-left: 80px; padding-right: 0; }
+            .timeline-item:nth-child(even) { left: 0; padding-left: 80px; }
+            .timeline-dot, .timeline-item:nth-child(even) .timeline-dot { left: 18px; right: auto; }
+            .timeline-content::before, .timeline-item:nth-child(even) .timeline-content::before { left: -15px; right: auto; border-width: 15px 15px 15px 0; border-color: transparent var(--glass-border) transparent transparent; }
+        }
+
+        /* =========================================
+           13. SKILLS / ARSENAL
+           ========================================= */
+        .skills-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: clamp(30px, 5vw, 60px); }
+        .skill-item { margin-bottom: 25px; position: relative; }
+        .skill-info { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: 700; font-size: 1.2rem; letter-spacing: 0.5px; }
+        .skill-percent { color: var(--secondary-color); font-family: 'Space Grotesk'; font-size: 1.3rem;}
+        .skill-bar-bg { width: 100%; height: 16px; background: rgba(255,255,255,0.03); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative;}
+        .skill-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); border-radius: 20px; width: 0; transition: width 2s cubic-bezier(0.16, 1, 0.3, 1); position: relative; box-shadow: 0 0 20px rgba(133, 159, 61, 0.5); }
+        .skill-bar-fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); animation: textGradient 2s infinite linear; border-radius: inherit; }
+
+        /* =========================================
+           14. PROJECTS & FILTER SYSTEM
+           ========================================= */
+        .portfolio-filters { display: flex; justify-content: center; gap: 15px; margin-bottom: 60px; flex-wrap: wrap; }
+        .filter-btn { padding: 12px 30px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; color: var(--text-muted); font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: 'Outfit'; letter-spacing: 1px; text-transform: uppercase; font-size: 0.9rem;}
+        .filter-btn:hover { border-color: var(--secondary-color); color: #fff; }
+        .filter-btn.active { background: var(--secondary-color); border-color: var(--secondary-color); color: var(--bg-color); box-shadow: 0 10px 20px rgba(133, 159, 61, 0.3); }
+
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: clamp(25px, 4vw, 50px); }
+        .project-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; /* Fix image corners */ border-radius: 24px;}
+        .project-img-wrapper { position: relative; height: 280px; overflow: hidden; border-radius: 24px 24px 0 0; }
+        .project-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .project-card:hover .project-img { transform: scale(1.1) translateY(-5px); }
+        
+        .project-badge { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: #fff; border: 1px solid rgba(255,255,255,0.2); z-index: 3;}
+        
+        .project-overlay { position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-color) 0%, transparent 60%); opacity: 0.9; transition: opacity 0.5s; z-index: 1;}
+        .project-card:hover .project-overlay { opacity: 0.3; }
+        
+        .project-content { padding: 35px; flex-grow: 1; display: flex; flex-direction: column; position: relative; z-index: 2; border-top: 1px solid rgba(255,255,255,0.05);}
+        .project-title { font-size: 1.8rem; margin-bottom: 15px; transition: color 0.3s; font-weight: 800;}
+        .project-card:hover .project-title { color: var(--secondary-color); }
+        .project-desc { color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; flex-grow: 1; margin-bottom: 25px; }
+        
+        .project-link { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-size: 0.95rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; padding: 15px 0; border-top: 1px solid var(--glass-border); transition: all 0.3s; position: relative; }
+        .project-link i { color: var(--secondary-color); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 1.2rem;}
+        .project-link:hover { color: var(--text-inverse); background: var(--secondary-color); padding: 15px 20px; border-radius: 12px; border-color: transparent;}
+        .project-link:hover i { transform: translateX(5px); color: var(--text-inverse); }
+
+        /* =========================================
+           15. TESTIMONIALS SLIDER
+           ========================================= */
+        .testimonials-slider { display: flex; gap: 40px; overflow-x: auto; padding-bottom: 40px; scroll-snap-type: x mandatory; scrollbar-width: none; cursor: grab;}
+        .testimonials-slider::-webkit-scrollbar { display: none; }
+        .testimonials-slider:active { cursor: grabbing; }
+        .testimonial-card { min-width: clamp(280px, 80vw, 400px); padding: 40px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 20px;}
+        .test-quote-icon { font-size: 3rem; color: rgba(255,255,255,0.05); position: absolute; top: 30px; right: 30px; }
+        .test-stars { color: #FFD700; font-size: 1.2rem; display: flex; gap: 5px;}
+        .test-text { font-size: 1.1rem; color: #ddd; line-height: 1.8; font-style: italic; flex-grow: 1; position: relative; z-index: 2;}
+        .test-author-box { display: flex; align-items: center; gap: 15px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;}
+        .test-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--secondary-color); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--bg-color); font-size: 1.2rem;}
+        .test-author-info h4 { font-size: 1.1rem; color: #fff; font-weight: 700;}
+        .test-author-info span { font-size: 0.9rem; color: var(--secondary-color); }
+
+        /* =========================================
+           16. FAQ ACCORDION (CRITICAL FIX)
+           ========================================= */
+        .faq-container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;}
+        .faq-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; transition: all 0.3s;}
+        .faq-item.active { border-color: var(--secondary-color); background: rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
+        .faq-question { padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; font-size: 1.2rem; font-weight: 700; color: #fff; cursor: pointer; transition: color 0.3s;}
+        .faq-question:hover { color: var(--secondary-color); }
+        .faq-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; transition: transform 0.4s; color: var(--secondary-color); flex-shrink: 0;}
+        .faq-item.active .faq-icon { transform: rotate(180deg); background: var(--secondary-color); color: var(--text-inverse);}
+        
+        /* Inner Wrapper approach to fix padding jump issue on expand */
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .faq-answer-inner { padding: 0 30px 30px; color: var(--text-muted); line-height: 1.8; font-size: 1.05rem; opacity: 0; transition: opacity 0.3s ease; }
+        .faq-item.active .faq-answer-inner { opacity: 1; transition-delay: 0.1s; }
+
+        /* =========================================
+           17. CONTACT SECTION
+           ========================================= */
+        .contact-container { display: grid; grid-template-columns: 1fr 1.5fr; gap: clamp(40px, 6vw, 80px); align-items: start; }
+        .contact-info { display: flex; flex-direction: column; gap: 30px; }
+        
+        .contact-card { display: flex; align-items: center; gap: 25px; padding: 30px; border-radius: 24px; transition: var(--transition-bounce); cursor: pointer; }
+        .contact-card:hover { transform: translateX(15px) scale(1.02); background: rgba(255,255,255,0.04); border-color: var(--secondary-color); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        
+        .contact-icon { width: 65px; height: 65px; flex-shrink: 0; border-radius: 50%; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: var(--secondary-color); border: 1px solid var(--glass-border); transition: all 0.4s; position: relative; }
+        .contact-card:hover .contact-icon { background: var(--secondary-color); color: var(--text-inverse); transform: scale(1.15) rotate(10deg); box-shadow: 0 15px 30px rgba(133, 159, 61, 0.4); }
+        .contact-text h4 { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 600;}
+        .contact-text span { font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 700; color: #fff; transition: color 0.3s; word-break: break-all;}
+        .contact-card:hover .contact-text span { color: var(--secondary-color); }
+        
+        /* Premium Form */
+        .contact-form { padding: clamp(30px, 5vw, 60px); display: grid; gap: 35px; }
+        .contact-form h3 { font-size: clamp(2rem, 4vw, 2.8rem); margin-bottom: 5px; color: #fff;}
+        .contact-form p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 20px;}
+        
+        .input-group { position: relative; }
+        .input-group label { display: block; margin-bottom: 12px; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        .input-group input, .input-group textarea, .input-group select { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 20px 25px; border-radius: 16px; color: #fff; font-size: 1.1rem; transition: var(--transition-smooth); }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: var(--secondary-color); background: rgba(0,0,0,0.7); box-shadow: 0 0 0 4px rgba(133, 159, 61, 0.15); }
+        .input-group input::placeholder, .input-group textarea::placeholder { color: rgba(255,255,255,0.2); }
+        .input-group input:focus::placeholder, .input-group textarea:focus::placeholder { color: transparent; }
+
+        /* =========================================
+           18. EXTENDED FOOTER
+           ========================================= */
+        footer { padding: 100px 5% 40px; border-top: 1px solid var(--glass-border); background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9)); position: relative; z-index: 10; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 60px; max-width: 1500px; margin: 0 auto; padding-bottom: 60px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 40px;}
+        .footer-brand h2 { font-size: 2.5rem; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;}
+        .footer-brand p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.8; max-width: 400px; margin-bottom: 30px;}
+        .footer-socials { display: flex; gap: 15px; flex-wrap: wrap;}
+        .footer-socials a { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff; transition: var(--transition-bounce);}
+        .footer-socials a:hover { background: var(--secondary-color); border-color: var(--secondary-color); color: var(--text-inverse); transform: translateY(-5px) scale(1.1);}
+        
+        .footer-links h4 { font-size: 1.3rem; margin-bottom: 25px; color: #fff;}
+        .footer-links ul { display: flex; flex-direction: column; gap: 15px;}
+        .footer-links a { color: var(--text-muted); transition: color 0.3s; font-size: 1.1rem;}
+        .footer-links a:hover { color: var(--secondary-color); padding-left: 5px;}
+        
+        .footer-bottom { text-align: center; }
+        .footer-bottom p.credit { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: #ddd; letter-spacing: 1px;}
+        .heart { color: #ff3366; animation: heartbeat 1.5s infinite; display: inline-block; }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+        .footer-bottom .ai-text { font-size: 0.9rem; color: rgba(255,255,255,0.4); max-width: 800px; margin: 0 auto; line-height: 1.6;}
+
+        /* =========================================
+           19. TOAST NOTIFICATIONS & CONTEXT MENU
+           ========================================= */
+        #toast-container { position: fixed; top: 40px; right: 40px; z-index: 999999; display: flex; flex-direction: column; gap: 15px; pointer-events: none;}
+        .toast { background: rgba(20,20,20,0.95); backdrop-filter: blur(25px); border: 1px solid var(--secondary-color); border-left: 5px solid var(--secondary-color); color: #fff; padding: 20px 30px; border-radius: 12px; font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); transform: translateX(120%) scale(0.9); opacity: 0; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s; pointer-events: auto;}
+        .toast.show { transform: translateX(0) scale(1); opacity: 1; }
+        .toast i { color: var(--secondary-color); font-size: 1.6rem; }
+
+        /* Custom Right Click Menu */
+        #context-menu { position: fixed; z-index: 9999998; width: 240px; background: rgba(18,18,18,0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.9); opacity: 0; visibility: hidden; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top left;}
+        #context-menu.active { transform: scale(1); opacity: 1; visibility: visible; }
+        .context-item { padding: 12px 15px; border-radius: 10px; color: #fff; font-size: 0.95rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s;}
+        .context-item:hover { background: var(--secondary-color); color: var(--text-inverse); }
+        .context-item i { font-size: 1.1rem; width: 20px; text-align: center;}
+        .context-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0; }
+
+        /* =========================================
+           20. MEGA ADMIN PANEL (TABBED)
+           ========================================= */
+        /* CRITICAL FIX: Repositioned exactly to bottom-left corner */
+        .admin-trigger { position: fixed; bottom: 40px; left: 40px; right: auto; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5); z-index: 9999; backdrop-filter: blur(20px); transition: var(--transition-bounce); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .admin-trigger:hover { color: var(--text-inverse); border-color: var(--secondary-color); background: var(--secondary-color); transform: scale(1.15) translateY(-5px); box-shadow: 0 15px 40px rgba(133, 159, 61, 0.5); }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); z-index: 100000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.5s ease; padding: 20px;}
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--bg-color); border: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.2); border-radius: 30px; width: 100%; max-width: 1300px; height: 90vh; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 50px 100px rgba(0,0,0,0.8); transform: scale(0.95) translateY(30px) rotateX(5deg); opacity: 0; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.6s; transform-style: preserve-3d; }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0) rotateX(0deg); opacity: 1; }
+        
+        .modal-header { padding: 25px 40px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); z-index: 10; }
+        .close-modal { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition-bounce); font-size: 1.2rem; cursor: pointer; }
+        .close-modal:hover { background: #ff3366; border-color: #ff3366; transform: rotate(90deg) scale(1.1); box-shadow: 0 0 20px rgba(255,51,102,0.4);}
+        
+        .admin-login { padding: 100px 40px; max-width: 500px; margin: auto; text-align: center; width: 100%;}
+        
+        /* Tabbed Dashboard Layout */
+        .admin-dashboard { display: none; height: 100%; flex-direction: row; overflow: hidden;}
+        .admin-sidebar { width: 300px; background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex-shrink: 0;}
+        .admin-tab-btn { padding: 18px 25px; border-radius: 16px; color: var(--text-muted); font-size: 1.1rem; font-weight: 600; text-align: left; transition: all 0.3s; display: flex; align-items: center; gap: 15px; border: 1px solid transparent;}
+        .admin-tab-btn:hover { background: rgba(255,255,255,0.03); color: #fff;}
+        .admin-tab-btn.active { background: var(--secondary-color); color: var(--text-inverse); box-shadow: 0 10px 20px rgba(133, 159, 61, 0.3); font-weight: 700;}
+        .admin-tab-btn i { width: 24px; text-align: center; font-size: 1.2rem;}
+
+        .admin-main { flex-grow: 1; padding: 40px 50px; overflow-y: auto; background: var(--bg-color);}
+        .admin-tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .admin-tab-content.active { display: block; }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+        .admin-section { background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 40px; border-radius: 24px; margin-bottom: 30px; }
+        .admin-section h3 { margin-bottom: 30px; display: flex; align-items: center; gap: 15px; color: #fff; font-size: 1.8rem;}
+        
+        .color-picker-group { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); transition: border-color 0.3s;}
+        .color-picker-group:hover { border-color: rgba(255,255,255,0.2); }
+        .color-picker-group input[type="color"] { width: 60px; height: 60px; border: none; border-radius: 12px; cursor: pointer; background: none; padding: 0;}
+        .color-picker-group input[type="text"] { flex-grow: 1; background: transparent; border: none; color: #fff; font-size: 1.2rem; font-family: monospace; font-weight: 600;}
+
+        .admin-list-item { background: rgba(0,0,0,0.4); padding: 25px; border-radius: 16px; border: 1px solid var(--glass-border); margin-bottom: 20px; position: relative; transition: all 0.3s; display: grid; gap: 10px;}
+        .admin-list-item:hover { border-color: var(--secondary-color); transform: translateX(5px); background: rgba(255,255,255,0.03); }
+        .delete-btn { position: absolute; top: 20px; right: 20px; background: rgba(255,51,102,0.1); color: #ff3366; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; cursor: pointer; font-size: 1.2rem;}
+        .delete-btn:hover { background: #ff3366; color: #fff; transform: scale(1.15) rotate(5deg); }
+
+        .admin-form-box { padding: 40px; margin-top: 40px; background: rgba(0,0,0,0.5); border-radius: 24px; border: 1px dashed rgba(255,255,255,0.2); }
+        .admin-form-box h4 { margin-bottom: 25px; font-size: 1.5rem; color: #fff; }
+
+        /* =========================================
+           21. PREMIUM LOADER
+           ========================================= */
+        .loader-wrapper { position: fixed; inset: 0; background: var(--bg-color); z-index: 9999998; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease, visibility 0.8s ease; }
+        .loader-mesh { position: absolute; inset:0; background: radial-gradient(circle at center, rgba(133,159,61,0.15) 0%, transparent 60%); animation: pulseBg 2s infinite alternate;}
+        .spinner { width: 100px; height: 100px; position: relative; margin-bottom: 40px; z-index: 2;}
+        .spinner div { box-sizing: border-box; display: block; position: absolute; width: 100%; height: 100%; border: 4px solid transparent; border-radius: 50%; animation: spinner 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
+        .spinner div:nth-child(1) { border-top-color: var(--primary-color); animation-delay: -0.45s; }
+        .spinner div:nth-child(2) { border-right-color: var(--secondary-color); animation-delay: -0.3s; inset: 15px; width: calc(100% - 30px); height: calc(100% - 30px); }
+        .spinner div:nth-child(3) { border-bottom-color: #fff; animation-delay: -0.15s; inset: 30px; width: calc(100% - 60px); height: calc(100% - 60px); }
+        .loading-progress { font-family: 'Space Grotesk'; font-size: 3rem; font-weight: 800; color: #fff; z-index: 2; margin-bottom: 10px;}
+        .loading-text { letter-spacing: 8px; text-transform: uppercase; font-size: 1.1rem; color: var(--text-muted); font-weight: 700; z-index: 2; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulseBg { 0% { transform: scale(0.8); opacity: 0.5;} 100% { transform: scale(1.2); opacity: 1;} }
+
+        /* =========================================
+           22. RESPONSIVENESS & ZOOM FIXES
+           ========================================= */
+        @media (max-width: 1400px) {
+            .hero { grid-template-columns: 1fr; text-align: center; gap: 80px; padding-top: 180px;}
+            .hero-content p { margin: 0 auto 50px auto; }
+            .hero-btns { justify-content: center; }
+            .hero-visual { grid-row: 1; height: auto; }
+            .typewriter-container { justify-content: center; }
+            .admin-dashboard { flex-direction: column; }
+            .admin-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); flex-direction: row; overflow-x: auto; padding: 20px;}
+            .admin-tab-btn { white-space: nowrap; }
+            .admin-main { padding: 30px 20px; }
+        }
+        @media (max-width: 992px) {
+            section { padding: 120px 5%; }
+            .section-title { font-size: clamp(2.5rem, 8vw, 4rem); }
+            .nav-links { display: none; }
+            .menu-toggle { display: block; }
+            .contact-container { grid-template-columns: 1fr; gap: 50px;}
+            .footer-grid { grid-template-columns: 1fr; text-align: center;}
+            .footer-brand { display: flex; flex-direction: column; align-items: center;}
+            .footer-socials { justify-content: center; }
+            .timeline-item { width: 100%; padding-left: 80px; padding-right: 0; }
+            .timeline-item:nth-child(even) { left: 0; padding-left: 80px; }
+            .timeline-dot, .timeline-item:nth-child(even) .timeline-dot { left: 18px; right: auto; }
+            .timeline-content::before, .timeline-item:nth-child(even) .timeline-content::before { left: -15px; right: auto; border-width: 15px 15px 15px 0; border-color: transparent var(--glass-border) transparent transparent; }
+            .timeline-container::before { left: 30px; }
+        }
+        @media (max-width: 576px) {
+            .hero-content h1 { font-size: 3rem; letter-spacing: -1px;}
+            .floating-badge { font-size: 1.8rem; padding: 15px; }
+            .badge-1 { right: -10%; } .badge-2 { left: -10%; }
+            .btn { width: 100%; justify-content: center; }
+            .contact-card { flex-direction: column; text-align: center; gap: 20px; }
+            .contact-form { padding: 40px 20px; }
+            .admin-login { padding: 60px 20px; }
+            .admin-trigger { bottom: 20px; left: 20px; width: 50px; height: 50px; font-size: 1.1rem;}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCROLL PROGRESS -->
+    <div id="scroll-progress"></div>
+
+    <!-- CUSTOM CURSOR & TRAIL -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+
+    <!-- CUSTOM CONTEXT MENU -->
+    <div id="context-menu">
+        <div class="context-item" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i> Reload Matrix</div>
+        <div class="context-divider"></div>
+        <div class="context-item" onclick="document.getElementById('home').scrollIntoView()"><i class="fa-solid fa-arrow-up"></i> Top Component</div>
+        <div class="context-item" onclick="window.open('mailto:ronakksdevelopment@gmail.com')"><i class="fa-solid fa-envelope"></i> Send Transmission</div>
+        <div class="context-divider"></div>
+        <div class="context-item" onclick="openAdminModal()"><i class="fa-solid fa-terminal"></i> System Admin</div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toast-container"></div>
+
+    <!-- PREMIUM MULTI-STAGE LOADER -->
+    <div class="loader-wrapper" id="loader">
+        <div class="loader-mesh"></div>
+        <div class="spinner"><div></div><div></div><div></div></div>
+        <div class="loading-progress" id="load-percent">0%</div>
+        <div class="loading-text">Calibrating UI Engines</div>
+    </div>
+
+    <!-- DYNAMIC ALIVE BACKGROUND -->
+    <div class="mesh-container">
+        <canvas id="particle-canvas"></canvas>
+        <div class="mesh-blob blob-1" id="blob-1"></div>
+        <div class="mesh-blob blob-2" id="blob-2"></div>
+        <div class="mesh-blob blob-3" id="blob-3"></div>
+        <div class="noise-overlay"></div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav id="navbar">
+        <div class="logo">
+            <div class="logo-box">R</div>
+            <span id="bind-brandName">Ronakks Development</span>
+        </div>
+        <!-- Desktop Menu -->
+        <div class="nav-links">
+            <a href="#home">Initiate</a>
+            <a href="#about">Specs</a>
+            <a href="#services">Architecture</a>
+            <a href="#projects">Deployments</a>
+            <a href="#contact">Transmit</a>
+        </div>
+        <!-- Mobile Menu Toggle -->
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu"><i class="fa-solid fa-bars-staggered"></i></button>
+    </nav>
+
+    <!-- FULLSCREEN MOBILE MENU OVERLAY -->
+    <div class="mobile-menu-overlay" id="mobile-menu">
+        <button class="close-modal" style="position: absolute; top: 30px; right: 30px;" id="menu-close" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
+        <div class="mobile-menu-links">
+            <a href="#home" class="mobile-link">01. Initiate</a>
+            <a href="#about" class="mobile-link">02. Specs</a>
+            <a href="#services" class="mobile-link">03. Architecture</a>
+            <a href="#projects" class="mobile-link">04. Deployments</a>
+            <a href="#faq" class="mobile-link">05. Intel (FAQ)</a>
+            <a href="#contact" class="mobile-link">06. Transmit</a>
+        </div>
+    </div>
+
+    <!-- HERO SECTION -->
+    <section id="home" class="hero">
+        <div class="hero-content reveal-left">
+            <div class="hero-greeting"><i class="fa-solid fa-satellite-dish"></i> <span id="bind-greeting">System Online. I am</span></div>
+            <h1 class="display-font"><span class="gradient-text" id="bind-name">Rajdeep Singh</span></h1>
+            <div class="typewriter-container">
+                <h3 id="typewriter-text"></h3><span class="type-cursor"></span>
+            </div>
+            <p id="bind-bio">Architecting digital excellence through the fusion of design logic and algorithmic precision. I transform complex visions into immersive, high-performance web experiences with uncompromising attention to detail.</p>
+            <div class="hero-btns">
+                <a href="#projects" class="btn btn-primary magnetic-btn">
+                    <span>Explore Masterpieces</span> <i class="fa-solid fa-rocket"></i>
+                </a>
+                <a href="#contact" class="btn btn-glass magnetic-btn">
+                    <span>Initialize Contact</span> <i class="fa-solid fa-terminal"></i>
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual reveal-right">
+            <div class="profile-container" id="profile-3d">
+                <div class="profile-rings"></div>
+                <div class="profile-img-wrap">
+                    <img id="bind-profileImg" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" alt="Profile" class="profile-img">
+                </div>
+            </div>
+            <div class="floating-badge badge-1"><i class="fa-solid fa-code"></i></div>
+            <div class="floating-badge badge-2"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="about">
+        <div class="section-header reveal">
+            <h2 class="section-title"><span>01.</span> Operational Specs</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="about-grid">
+            <div class="glass-panel stat-card reveal">
+                <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                <h3 class="display-font">Experience</h3>
+                <p id="bind-experience" class="highlight">10+ Years</p>
+                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.7;">Pioneering digital frontiers and architecting scalable UI systems since the dawn of modern web frameworks.</p>
+            </div>
+            <div class="glass-panel stat-card reveal" style="transition-delay: 0.1s;">
+                <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <h3 class="display-font">Qualification</h3>
+                <p id="bind-qualification" class="highlight" style="font-size: 1.8rem;">College Graduated</p>
+                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.7;">(English Honors) Bridging linguistic precision with complex code logic to craft compelling user narratives.</p>
+            </div>
+            <div class="glass-panel stat-card reveal" style="transition-delay: 0.2s;">
+                <div class="stat-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <h3 class="display-font">Base Location</h3>
+                <p id="bind-location" class="highlight" style="font-size: 1.8rem;">Agartala, India</p>
+                <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.7;">Stationed at coordinates 799001. Available globally for elite remote operations and collaborative ventures.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES / EXPERTISE SECTION -->
+    <section id="services">
+        <div class="section-header reveal">
+            <h2 class="section-title"><span>02.</span> Core Architecture</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="services-grid" id="services-grid">
+            <!-- Services injected via JS -->
+        </div>
+    </section>
+
+    <!-- TIMELINE / EXPERIENCE SECTION -->
+    <section id="experience">
+        <div class="section-header reveal">
+            <h2 class="section-title"><span>03.</span> Career Trajectory</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="timeline-container" id="timeline-container">
+            <!-- Timeline injected via JS -->
+        </div>
+    </section>
+
+    <!-- SKILLS SECTION -->
+    <section id="skills">
+        <div class="section-header reveal">
+            <h2 class="section-title"><span>04.</span> Technical Arsenal</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="skills-container" id="skills-container">
+            <!-- Skills injected via JS -->
+        </div>
+    </section>
+
+    <!-- PROJECTS SECTION -->
+    <section id="projects">
+        <div class="section-header reveal">
+            <h2 class="section-title"><span>05.</span> Masterpieces</h2>
+            <div class="section-line"></div>
+        </div>
+        
+        <!-- Filter Engine -->
+        <div class="portfolio-filters reveal" id="portfolio-filters">
+            <button class="filter-btn active" data-filter="All">All Constructs</button>
+            <button class="filter-btn" data-filter="UI/UX">UI/UX Design</button>
+            <button class="filter-btn" data-filter="Frontend">Frontend Code</button>
+            <button class="filter-btn" data-filter="AI">AI Integration</button>
+        </div>
+
+        <div class="projects-grid" id="projects-grid">
+            <!-- Dynamic Projects Injected Here -->
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION -->
+    <section id="testimonials">
+        <div class="section-header reveal">
+            <h2 class="section-title"><span>06.</span> Client Transmissions</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="testimonials-slider reveal" id="testimonials-slider">
+            <!-- Testimonials injected via JS -->
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section id="faq">
+        <div class="section-header reveal">
+            <h2 class="section-title"><span>07.</span> Extracted Intel (FAQ)</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="faq-container" id="faq-container">
+            <!-- FAQs injected via JS -->
+        </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact">
+        <div class="section-header reveal">
+            <h2 class="section-title"><span>08.</span> Initialize Protocol</h2>
+            <div class="section-line"></div>
+        </div>
+        <div class="contact-container">
+            <div class="contact-info reveal-left">
+                <a href="tel:+917005087244" class="glass-panel contact-card">
+                    <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+                    <div class="contact-text">
+                        <h4>Direct Comms</h4>
+                        <span id="link-call">+91 70050 87244</span>
+                    </div>
+                </a>
+                <a href="https://wa.me/917005966672?text=Hello%20Rajdeep,%20I%20want%20to%20work%20with%20you" target="_blank" class="glass-panel contact-card" style="transition-delay: 0.1s;">
+                    <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
+                    <div class="contact-text">
+                        <h4>Secure Channel</h4>
+                        <span id="link-wa">+91 70059 66672</span>
+                    </div>
+                </a>
+                <a href="mailto:ronakksdevelopment@gmail.com?subject=Work%20Inquiry&body=Hello%20Rajdeep,%20I%20want%20to%20work%20with%20you" class="glass-panel contact-card" style="transition-delay: 0.2s;">
+                    <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="contact-text">
+                        <h4>Digital Mail</h4>
+                        <span id="link-email" style="font-size: clamp(1rem, 2vw, 1.1rem);">ronakksdevelopment<br>@gmail.com</span>
+                    </div>
+                </a>
+            </div>
+            
+            <form class="glass-panel contact-form reveal-right" onsubmit="transmitMessage(event)">
+                <h3 class="display-font">Send Direct Transmission</h3>
+                <p>Secure encryption established. Ready for payload.</p>
+                <div class="input-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px;">
+                    <div>
+                        <label>Identity / Designation</label>
+                        <input type="text" id="contact-name" placeholder="John Doe" required>
+                    </div>
+                    <div>
+                        <label>Return Address</label>
+                        <input type="email" id="contact-mail" placeholder="john@example.com" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Encrypted Payload</label>
+                    <textarea id="contact-msg" rows="5" placeholder="Formulate message..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary magnetic-btn" style="width: 100%;">
+                    <span>Initiate Transfer</span> <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2 class="display-font"><div class="logo-box" style="width: 40px; height: 40px; display: inline-flex; margin-right: 10px;">R</div> Ronakks Development</h2>
+                <p>Forging the future of digital interactions through premium design, robust code, and intelligent AI integration.</p>
+                <div class="footer-socials">
+                    <a href="#" target="_blank" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+                    <a href="#" target="_blank" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#" target="_blank" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" target="_blank" aria-label="Dribbble"><i class="fa-brands fa-dribbble"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>Navigation Matrix</h4>
+                <ul>
+                    <li><a href="#home">Initiate</a></li>
+                    <li><a href="#about">Operational Specs</a></li>
+                    <li><a href="#projects">Masterpieces</a></li>
+                    <li><a href="#contact">Transmit Protocol</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Legal & Info</h4>
+                <ul>
+                    <li><a href="#">Privacy Protocol</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Matrix</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p class="display-font credit">
+                Developed With <i class="fa-solid fa-heart heart"></i> By <span style="color: var(--secondary-color);">Rajdeep Singh</span> & Gemini AI
+            </p>
+            <p class="ai-text">
+                This website is fully created using AI-powered prompts with zero manual coding. You can also build premium portfolio websites like this — contact me to learn!
+            </p>
+        </div>
+    </footer>
+
+    <!-- ADMIN TRIGGER -->
+    <button class="admin-trigger magnetic-btn" aria-label="Open Admin" onclick="openAdminModal()">
+        <i class="fa-solid fa-lock" style="font-size: 1.4rem;"></i>
+    </button>
+
+    <!-- MEGA ADMIN MODAL -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="display-font" style="font-size: clamp(1.5rem, 3vw, 2rem); color: #fff;"><i class="fa-solid fa-shield-halved" style="color: var(--secondary-color); margin-right: 15px;"></i> Core CMS Override</h2>
+                <button class="close-modal" aria-label="Close Modal" onclick="closeAdminModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <!-- Login -->
+            <div class="admin-login" id="adminLogin">
+                <h3 class="display-font" style="margin-bottom: 30px; color: var(--text-muted); font-size: 2rem;">Authentication Required</h3>
+                <div class="input-group" style="margin-bottom: 25px; text-align: left;">
+                    <label>Admin Designation</label>
+                    <input type="text" id="adminUser" placeholder="Username">
+                </div>
+                <div class="input-group" style="margin-bottom: 30px; text-align: left;">
+                    <label>Access Cipher</label>
+                    <input type="password" id="adminPass" placeholder="Password">
+                </div>
+                <p id="loginError" style="color: #ff3366; font-size: 1.1rem; margin-bottom: 25px; display: none; font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> Error: Invalid Cipher Detected.</p>
+                <button class="btn btn-primary magnetic-btn" style="width: 100%; padding: 20px;" onclick="verifyAdmin()">Decrypt & Enter System</button>
+            </div>
+
+            <!-- Tabbed Dashboard -->
+            <div class="admin-dashboard" id="adminDashboard">
+                
+                <!-- Sidebar Tabs -->
+                <div class="admin-sidebar">
+                    <button class="admin-tab-btn active" data-target="admin-theme"><i class="fa-solid fa-palette"></i> Theme Matrix</button>
+                    <button class="admin-tab-btn" data-target="admin-identity"><i class="fa-solid fa-user-astronaut"></i> Protocol</button>
+                    <button class="admin-tab-btn" data-target="admin-services"><i class="fa-solid fa-server"></i> Services</button>
+                    <button class="admin-tab-btn" data-target="admin-timeline"><i class="fa-solid fa-timeline"></i> Experience</button>
+                    <button class="admin-tab-btn" data-target="admin-skills"><i class="fa-solid fa-crosshairs"></i> Arsenal</button>
+                    <button class="admin-tab-btn" data-target="admin-projects"><i class="fa-solid fa-layer-group"></i> Deployments</button>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="admin-main">
+                    
+                    <!-- THEME TAB -->
+                    <div class="admin-tab-content active" id="admin-theme">
+                        <div class="admin-section">
+                            <h3><i class="fa-solid fa-palette"></i> Live Theme Variables</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+                                <div class="color-picker-group">
+                                    <input type="color" id="colorBg" oninput="updateTheme('bg-color', this.value)">
+                                    <div style="flex-grow: 1;">
+                                        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Background</label>
+                                        <input type="text" id="textBg" oninput="updateTheme('bg-color', this.value)">
+                                    </div>
+                                </div>
+                                <div class="color-picker-group">
+                                    <input type="color" id="colorPrimary" oninput="updateTheme('primary-color', this.value)">
+                                    <div style="flex-grow: 1;">
+                                        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Primary Component</label>
+                                        <input type="text" id="textPrimary" oninput="updateTheme('primary-color', this.value)">
+                                    </div>
+                                </div>
+                                <div class="color-picker-group">
+                                    <input type="color" id="colorSecondary" oninput="updateTheme('secondary-color', this.value)">
+                                    <div style="flex-grow: 1;">
+                                        <label style="display:block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Secondary Highlight</label>
+                                        <input type="text" id="textSecondary" oninput="updateTheme('secondary-color', this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 20px; margin-top: 40px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="saveTheme()">Commit Matrix</button>
+                                <button class="btn btn-glass" style="border-color: #ff3366; color: #ff3366;" onclick="resetTheme()">Factory Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IDENTITY TAB -->
+                    <div class="admin-tab-content" id="admin-identity">
+                        <div class="admin-section">
+                            <h3><i class="fa-solid fa-pen-nib"></i> Identity & Core Strings</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+                                <div class="input-group">
+                                    <label>Full Name String</label>
+                                    <input type="text" id="edit-name" oninput="updateText('name', this.value)">
+                                </div>
+                                <div class="input-group">
+                                    <label>Brand Designation</label>
+                                    <input type="text" id="edit-brandName" oninput="updateText('brandName', this.value)">
+                                </div>
+                                <div class="input-group" style="grid-column: 1 / -1;">
+                                    <label>Roles Array / Tagline</label>
+                                    <input type="text" id="edit-tagline" oninput="updateText('tagline', this.value)">
+                                </div>
+                                <div class="input-group" style="grid-column: 1 / -1;">
+                                    <label>Extended Biography</label>
+                                    <textarea id="edit-bio" rows="5" oninput="updateText('bio', this.value)"></textarea>
+                                </div>
+                                <div class="input-group" style="grid-column: 1 / -1;">
+                                    <label>Profile Avatar URL Node</label>
+                                    <input type="text" id="edit-profileImg" oninput="updateImg('profileImg', this.value)">
+                                </div>
+                                <div class="input-group"><label>Experience Meta</label><input type="text" id="edit-experience" oninput="updateText('experience', this.value)"></div>
+                                <div class="input-group"><label>Qualification Meta</label><input type="text" id="edit-qualification" oninput="updateText('qualification', this.value)"></div>
+                                <div class="input-group"><label>Location Meta</label><input type="text" id="edit-location" oninput="updateText('location', this.value)"></div>
+                            </div>
+                            <button class="btn btn-primary" style="margin-top: 40px;" onclick="saveData()">Save Protocol Data</button>
+                        </div>
+                    </div>
+
+                    <!-- SERVICES TAB -->
+                    <div class="admin-tab-content" id="admin-services">
+                        <div class="admin-section">
+                            <h3><i class="fa-solid fa-server"></i> Manage Services</h3>
+                            <div id="admin-services-list"></div>
+                            <div class="admin-form-box">
+                                <h4>Add New Service Node</h4>
+                                <div style="display: grid; gap: 20px;">
+                                    <div class="input-group"><label>Title</label><input type="text" id="newSrvTitle" placeholder="e.g., UI/UX Architecture"></div>
+                                    <div class="input-group"><label>FontAwesome Icon Class</label><input type="text" id="newSrvIcon" placeholder="e.g., fa-solid fa-pen-nib"></div>
+                                    <div class="input-group"><label>Description</label><textarea id="newSrvDesc" rows="2"></textarea></div>
+                                    <div class="input-group"><label>Sub-skills (Comma separated)</label><input type="text" id="newSrvSkills" placeholder="Wireframing, Prototyping, Figma"></div>
+                                    <button class="btn btn-primary" onclick="addService()">Inject Service Node</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TIMELINE TAB -->
+                    <div class="admin-tab-content" id="admin-timeline">
+                        <div class="admin-section">
+                            <h3><i class="fa-solid fa-timeline"></i> Experience Data</h3>
+                            <div id="admin-timeline-list"></div>
+                            <div class="admin-form-box">
+                                <h4>Add Timeline Milestone</h4>
+                                <div style="display: grid; gap: 20px;">
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                                        <div class="input-group"><label>Year Range</label><input type="text" id="newTimeYear" placeholder="2020 - Present"></div>
+                                        <div class="input-group"><label>Role / Title</label><input type="text" id="newTimeRole" placeholder="Senior Architect"></div>
+                                    </div>
+                                    <div class="input-group"><label>Company / Faction</label><input type="text" id="newTimeComp" placeholder="Ronakks Corp"></div>
+                                    <div class="input-group"><label>Description Payload</label><textarea id="newTimeDesc" rows="3"></textarea></div>
+                                    <button class="btn btn-primary" onclick="addTimeline()">Inject Milestone</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SKILLS TAB -->
+                    <div class="admin-tab-content" id="admin-skills">
+                        <div class="admin-section">
+                            <h3><i class="fa-solid fa-crosshairs"></i> Adjust Arsenal</h3>
+                            <div id="admin-skills-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;"></div>
+                            <div class="admin-form-box">
+                                <h4>Calibrate New Skill</h4>
+                                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                                    <div class="input-group"><label>Skill Designation</label><input type="text" id="newSkillName" placeholder="e.g., WebGL"></div>
+                                    <div class="input-group"><label>Proficiency (%)</label><input type="number" id="newSkillPer" placeholder="95" min="1" max="100"></div>
+                                </div>
+                                <button class="btn btn-primary" style="margin-top: 20px;" onclick="addSkill()">Add to Arsenal</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PROJECTS TAB -->
+                    <div class="admin-tab-content" id="admin-projects">
+                        <div class="admin-section">
+                            <h3><i class="fa-solid fa-layer-group"></i> Manage Deployments</h3>
+                            <div id="admin-projects-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;"></div>
+                            <div class="admin-form-box">
+                                <h4>Deploy New Construct</h4>
+                                <div style="display: grid; gap: 20px;">
+                                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                                        <div class="input-group"><label>Project Title</label><input type="text" id="newProjTitle"></div>
+                                        <div class="input-group">
+                                            <label>Category Tag</label>
+                                            <select id="newProjTag" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 16px; color: #fff; font-size: 1.1rem;">
+                                                <option value="UI/UX">UI/UX</option>
+                                                <option value="Frontend">Frontend</option>
+                                                <option value="AI">AI Integration</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="input-group"><label>High-Res Image URL</label><input type="text" id="newProjImg"></div>
+                                    <div class="input-group"><label>Live Demo URL</label><input type="text" id="newProjLink"></div>
+                                    <div class="input-group"><label>Architectural Description</label><textarea id="newProjDesc" rows="3"></textarea></div>
+                                    <button class="btn btn-primary" onclick="addProject()">Initialize Deployment</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================
+         23. MASSIVE ARCHITECTURE JAVASCRIPT
+         ========================================= -->
+    <script>
+        // --- 1. ROBUST DATA STRUCTURES (CMS CORE) ---
+        const defaultTheme = { bg: '#121212', primary: '#31511E', secondary: '#859F3D' };
+        const defaultData = {
+            name: "Rajdeep Singh", brandName: "Ronakks Development",
+            tagline: "Creative UI Developer | Prompt Engineer | Graphics Designer",
+            bio: "Architecting digital excellence through the fusion of design logic and algorithmic precision. I transform complex visions into immersive, high-performance web experiences with uncompromising attention to detail.",
+            experience: "10+ Years", qualification: "College Graduated", location: "Agartala, India",
+            profileImg: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
+        };
+        const defaultServices = [
+            { id: 1, title: "UI/UX Architecture", icon: "fa-solid fa-bezier-curve", desc: "Crafting wireframes, user flows, and high-fidelity prototypes that define the next generation of digital aesthetics.", skills: ["Figma", "Prototyping", "User Research"] },
+            { id: 2, title: "Frontend Engineering", icon: "fa-solid fa-code", desc: "Translating complex designs into pixel-perfect, highly optimized, and interactive code ecosystems.", skills: ["React", "HTML/CSS/JS", "Animations"] },
+            { id: 3, title: "AI Prompt Engineering", icon: "fa-solid fa-brain", desc: "Mastering language models to generate premium code, copy, and structural logic with unparalleled efficiency.", skills: ["LLM Manipulation", "Logic Structuring", "Automations"] }
+        ];
+        const defaultTimeline = [
+            { id: 1, year: "2020 - Present", role: "Senior UI/UX Architect & Developer", comp: "Ronakks Development", desc: "Leading advanced frontend deployments, integrating AI-driven logic into modern web frameworks, and pushing the boundaries of interactive glassmorphism." },
+            { id: 2, year: "2016 - 2020", role: "Lead Frontend Engineer", comp: "Creative Web Agency", desc: "Spearheaded a team of developers crafting bespoke e-commerce solutions. Optimized loading algorithms reducing bounce rates by 40%." },
+            { id: 3, year: "2013 - 2016", role: "Graphic Designer & Web Associate", comp: "Freelance Network", desc: "Mastered the adobe suite. Designed brand identities, vectors, and transitioned into full-scale HTML/CSS structural coding." }
+        ];
+        const defaultSkills = [
+            { id: 1, name: "Full Creative Development", percent: 98 }, { id: 2, name: "UI/UX Designing", percent: 95 },
+            { id: 3, name: "Prompt Engineering", percent: 92 }, { id: 4, name: "Coding & Debugging", percent: 90 }, { id: 5, name: "React & Figma", percent: 88 }
+        ];
+        const defaultProjects = [
+            { id: 1, tag: "UI/UX", title: "Nexus E-Commerce", desc: "A futuristic shopping experience featuring advanced glassmorphism UI, dynamic background generation, and buttery-smooth micro-interactions.", img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80", link: "#" },
+            { id: 2, tag: "AI", title: "AI Prompt Engine", desc: "Advanced dashboard designed for high-efficiency prompt engineering, equipped with a dark-mode optimized aesthetic and fluid typography.", img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80", link: "#" },
+            { id: 3, tag: "Frontend", title: "Cyberpunk Portfolio", desc: "Award-winning creative portfolio utilizing dynamic lighting effects, custom canvas particle interactions, and robust responsive design.", img: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80", link: "#" },
+            { id: 4, tag: "UI/UX", title: "FinTech Dashboard", desc: "Enterprise-grade financial analytics dashboard prioritizing data visualization, secure aesthetics, and complex table matrices.", img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80", link: "#" }
+        ];
+        const defaultTestimonials = [
+            { id: 1, name: "Sarah Jenkins", role: "Product Manager", rating: 5, text: "Rajdeep fundamentally altered our digital trajectory. His blend of design perfection and clean code is something you rarely see in the industry." },
+            { id: 2, name: "David Chen", role: "Startup Founder", rating: 5, text: "The AI integrations and prompt logic he utilized saved us months of development time. Highly strategic and exceptionally skilled." },
+            { id: 3, name: "Elena Rostova", role: "Creative Director", rating: 5, text: "Uncompromising attention to detail. Every pixel, every transition is meticulously calculated. He is a true architect of the web." }
+        ];
+        const defaultFaqs = [
+            { id: 1, q: "Do you take on full-scale enterprise projects?", a: "Yes. I specialize in scaling architectures from conceptual wireframes to fully deployed, production-ready enterprise applications utilizing modern frameworks and AI logic." },
+            { id: 2, q: "What does 'Prompt Engineer' mean in your workflow?", a: "It means I utilize advanced LLMs (like Gemini) strategically to accelerate development, write complex algorithms instantaneously, and generate flawless copy, reducing project timelines by up to 60%." },
+            { id: 3, q: "Are your designs fully responsive?", a: "Absolutely. I employ rigorous CSS grid/flexbox matrices and fluid typography to ensure pixel-perfect rendering across all viewports—from ultra-wide monitors to mobile interfaces." },
+            { id: 4, q: "Can I hire you for standalone UI/UX design?", a: "Yes, I offer standalone design packages executed in Figma, complete with interactive prototypes, design systems, and developer handoff documentation." }
+        ];
+
+        // Secure State Loading wrapper
+        function loadState(key, fallback) {
+            try {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : fallback;
+            } catch (e) {
+                console.warn(`Local storage parse error for ${key}`, e);
+                return fallback;
+            }
+        }
+
+        let state = {
+            theme: loadState('rs_theme', defaultTheme),
+            data: loadState('rs_data', defaultData),
+            services: loadState('rs_services', defaultServices),
+            timeline: loadState('rs_timeline', defaultTimeline),
+            skills: loadState('rs_skills', defaultSkills),
+            projects: loadState('rs_projects', defaultProjects),
+            testimonials: loadState('rs_testimonials', defaultTestimonials),
+            faqs: loadState('rs_faqs', defaultFaqs)
+        };
+
+        // --- 2. BOOT SEQUENCE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            simulateBootSequence();
+            applyTheme(); bindDataToDOM(); 
+            renderAllSections();
+            
+            // Init Engines
+            initCursorAndTrail();
+            initDynamicBackground();
+            initSpotlightGlassmorphism();
+            initScrollObservers();
+            initHero3D();
+            initNavbarLogic();
+            initContextMenu();
+            initTestimonialSlider();
+            initTypewriter();
+        });
+
+        function simulateBootSequence() {
+            const perc = document.getElementById('load-percent');
+            let p = 0;
+            const int = setInterval(() => {
+                p += Math.floor(Math.random() * 15) + 5;
+                if(p >= 100) {
+                    p = 100; clearInterval(int);
+                    setTimeout(() => {
+                        const loader = document.getElementById('loader');
+                        loader.style.opacity = '0';
+                        setTimeout(() => loader.style.display = 'none', 800);
+                    }, 500);
+                }
+                perc.innerText = p + '%';
+            }, 80); // sped up slightly
+        }
+
+        // --- 3. RENDER ENGINES ---
+        function renderAllSections() {
+            renderServices(); renderTimeline(); renderSkills(); 
+            renderProjects('All'); renderTestimonials(); renderFaqs();
+        }
+
+        function renderServices() {
+            const c = document.getElementById('services-grid');
+            c.innerHTML = state.services.map((s, i) => `
+                <div class="glass-panel service-card reveal" style="transition-delay: ${i*0.1}s">
+                    <i class="${s.icon} service-icon"></i>
+                    <h3>${s.title}</h3><p>${s.desc}</p>
+                    <ul class="service-list">${s.skills.map(sk => `<li><i class="fa-solid fa-check"></i> ${sk}</li>`).join('')}</ul>
+                </div>
+            `).join('');
+            initSpotlightGlassmorphism();
+        }
+
+        function renderTimeline() {
+            const c = document.getElementById('timeline-container');
+            c.innerHTML = state.timeline.map((t, i) => `
+                <div class="timeline-item reveal${i%2===0?'-left':'-right'}">
+                    <div class="timeline-dot"></div>
+                    <div class="glass-panel timeline-content">
+                        <span class="timeline-year">${t.year}</span>
+                        <h3 class="timeline-title">${t.role}</h3>
+                        <h4 class="timeline-company">${t.comp}</h4>
+                        <p class="timeline-desc">${t.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+            initSpotlightGlassmorphism();
+        }
+
+        function renderSkills() {
+            const c = document.getElementById('skills-container');
+            c.innerHTML = state.skills.map((s, i) => `
+                <div class="skill-item reveal" style="transition-delay: ${i * 0.1}s">
+                    <div class="skill-info"><span>${s.name}</span><span class="skill-percent">${s.percent}%</span></div>
+                    <div class="skill-bar-bg"><div class="skill-bar-fill load-bar" data-width="${s.percent}%"></div></div>
+                </div>
+            `).join('');
+        }
+
+        function renderProjects(filter = 'All') {
+            const c = document.getElementById('projects-grid');
+            const filtered = filter === 'All' ? state.projects : state.projects.filter(p => p.tag === filter);
+            if(filtered.length === 0) { c.innerHTML = `<p style="color: var(--text-muted); text-align: center; width:100%; grid-column: 1/-1;">No deployments found for this tag.</p>`; return; }
+            
+            c.innerHTML = filtered.map((p, i) => `
+                <div class="glass-panel project-card reveal" style="transition-delay: ${i * 0.1}s">
+                    <div class="project-img-wrapper">
+                        <span class="project-badge">${p.tag}</span>
+                        <img src="${p.img}" alt="${p.title}" class="project-img"><div class="project-overlay"></div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="display-font project-title">${p.title}</h3><p class="project-desc">${p.desc}</p>
+                        <a href="${p.link}" target="_blank" class="project-link">Initialize Demo <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            `).join('');
+            
+            const observer = new IntersectionObserver((entries) => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('active'); }); }, {threshold:0.1});
+            c.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+            initSpotlightGlassmorphism();
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                renderProjects(this.getAttribute('data-filter'));
+            });
+        });
+
+        function renderTestimonials() {
+            const c = document.getElementById('testimonials-slider');
+            c.innerHTML = state.testimonials.map(t => `
+                <div class="glass-panel testimonial-card">
+                    <i class="fa-solid fa-quote-right test-quote-icon"></i>
+                    <div class="test-stars">${'★'.repeat(t.rating)}${'☆'.repeat(5-t.rating)}</div>
+                    <p class="test-text">"${t.text}"</p>
+                    <div class="test-author-box">
+                        <div class="test-avatar">${t.name.charAt(0)}</div>
+                        <div class="test-author-info"><h4>${t.name}</h4><span>${t.role}</span></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* FAQ Rendering and Interactivity Fix */
+        function renderFaqs() {
+            const c = document.getElementById('faq-container');
+            c.innerHTML = state.faqs.map(f => `
+                <div class="faq-item reveal">
+                    <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0">${f.q} <div class="faq-icon"><i class="fa-solid fa-chevron-down"></i></div></div>
+                    <div class="faq-answer"><div class="faq-answer-inner"><p>${f.a}</p></div></div>
+                </div>
+            `).join('');
+        }
+        
+        // Expose globally
+        window.toggleFaq = function(el) {
+            const item = el.parentElement;
+            const answer = item.querySelector('.faq-answer');
+            const inner = item.querySelector('.faq-answer-inner');
+            const isActive = item.classList.contains('active');
+            
+            // Close all
+            document.querySelectorAll('.faq-item').forEach(i => { 
+                i.classList.remove('active'); 
+                i.querySelector('.faq-answer').style.maxHeight = null; 
+            });
+            
+            // Open clicked
+            if(!isActive) { 
+                item.classList.add('active'); 
+                answer.style.maxHeight = inner.scrollHeight + "px"; 
+            }
+        };
+
+        // --- 4. PRECISION CURSOR ENGINE ---
+        function initCursorAndTrail() {
+            if(window.matchMedia("(pointer: coarse)").matches) return;
+            const dot = document.getElementById('cursor-dot'); 
+            const outline = document.getElementById('cursor-outline');
+            let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+            let outlineX = mouseX, outlineY = mouseY;
+            
+            const trails = []; const numTrails = 15;
+            for(let i=0; i<numTrails; i++) {
+                const div = document.createElement('div'); div.className = 'cursor-trail';
+                document.body.appendChild(div); trails.push({ el: div, x: mouseX, y: mouseY });
+            }
+
+            window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+
+            function renderCursor() {
+                // Using calc avoids the translation collision bug and guarantees dead-center
+                dot.style.transform = `translate(calc(${mouseX}px - 50%), calc(${mouseY}px - 50%))`;
+                
+                outlineX += (mouseX - outlineX) * 0.25;
+                outlineY += (mouseY - outlineY) * 0.25;
+                outline.style.transform = `translate(calc(${outlineX}px - 50%), calc(${outlineY}px - 50%))`;
+
+                let px = mouseX, py = mouseY;
+                trails.forEach((t, i) => {
+                    t.x += (px - t.x) * 0.4; t.y += (py - t.y) * 0.4;
+                    t.el.style.transform = `translate(calc(${t.x}px - 50%), calc(${t.y}px - 50%)) scale(${(numTrails-i)/numTrails})`;
+                    t.el.style.opacity = document.body.classList.contains('cursor-hover') ? 0 : (0.6 - (i/numTrails));
+                    px = t.x; py = t.y;
+                });
+                requestAnimationFrame(renderCursor);
+            }
+            renderCursor();
+
+            // Hover interactions ensuring proper bounds and logic
+            const interactables = 'a, button, input, textarea, select, .magnetic-btn, .faq-question, .project-card, .service-card, .contact-card, .admin-tab-btn, .admin-list-item, .delete-btn, .close-modal, .context-item';
+            
+            document.body.addEventListener('mouseover', (e) => { 
+                if (e.target.closest(interactables)) {
+                    document.body.classList.add('cursor-hover');
+                }
+                if (e.target.closest('input[type="text"], input[type="email"], input[type="password"], textarea, select')) {
+                    document.body.classList.add('cursor-hide');
+                }
+            });
+            document.body.addEventListener('mouseout', (e) => { 
+                if (e.target.closest(interactables)) {
+                    document.body.classList.remove('cursor-hover');
+                }
+                if (e.target.closest('input[type="text"], input[type="email"], input[type="password"], textarea, select')) {
+                    document.body.classList.remove('cursor-hide');
+                }
+            });
+        }
+
+        // --- 5. CANVAS PARTICLE MESH ENGINE (Zoom Robust) ---
+        function initDynamicBackground() {
+            const b1 = document.getElementById('blob-1'), b2 = document.getElementById('blob-2');
+            let mX = window.innerWidth/2, mY = window.innerHeight/2;
+            window.addEventListener('mousemove', e => { mX = e.clientX; mY = e.clientY; });
+            
+            const canvas = document.getElementById('particle-canvas'); 
+            const ctx = canvas.getContext('2d');
+            let width, height, particles = [];
+            
+            // Handles Zoom and Resizing accurately via devicePixelRatio
+            function resize() { 
+                const dpr = window.devicePixelRatio || 1;
+                width = window.innerWidth; 
+                height = window.innerHeight; 
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                ctx.scale(dpr, dpr);
+            }
+            
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(resize, 200); // Debounce to save performance on heavy zoom
+            }); 
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width; this.y = Math.random() * height;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.vx = (Math.random() - 0.5) * 1; this.vy = (Math.random() - 0.5) * 1;
+                    this.baseAlpha = Math.random() * 0.5 + 0.1;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if(this.x > width) this.x = 0; else if(this.x < 0) this.x = width;
+                    if(this.y > height) this.y = 0; else if(this.y < 0) this.y = height;
+                    
+                    // Repulse logic utilizing purely squared values to skip heavy Math.sqrt execution where possible
+                    const dx = mX - this.x; const dy = mY - this.y;
+                    const distSq = dx*dx + dy*dy;
+                    if(distSq < 32400) { // 180 * 180 = 32400
+                        const dist = Math.sqrt(distSq);
+                        const force = (180 - dist) / 180;
+                        this.x -= (dx/dist) * force * 3; this.y -= (dy/dist) * force * 3;
+                    }
+                }
+                draw() {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.baseAlpha})`;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+
+            for(let i=0; i<90; i++) particles.push(new Particle());
+
+            // Click shockwave logic guarded to prevent firing on UI clicks
+            let shockwaves = [];
+            window.addEventListener('click', (e) => { 
+                if(!document.getElementById('adminModal').classList.contains('active') && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                    shockwaves.push({x: e.clientX, y: e.clientY, radius: 0, alpha: 1}); 
+                }
+            });
+
+            function animate() {
+                const scrollY = window.scrollY;
+                b1.style.transform = `translate(${(mX - width/2)*0.03}px, ${(mY - height/2)*0.03 + scrollY*0.15}px)`;
+                b2.style.transform = `translate(${(width/2 - mX)*0.03}px, ${(height/2 - mY)*0.03 - scrollY*0.1}px)`;
+
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw shockwaves
+                for(let i=shockwaves.length-1; i>=0; i--) {
+                    let s = shockwaves[i];
+                    ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
+                    ctx.strokeStyle = `rgba(133, 159, 61, ${s.alpha})`; ctx.lineWidth = 2; ctx.stroke();
+                    s.radius += 10; s.alpha -= 0.02;
+                    if(s.alpha <= 0) shockwaves.splice(i, 1);
+                }
+
+                for(let i=0; i<particles.length; i++) {
+                    particles[i].update(); particles[i].draw();
+                    for(let j=i; j<particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+                        const distSq = dx*dx + dy*dy;
+                        if(distSq < 14400) { // 120 * 120 = 14400 (Squared optimizations)
+                            const dist = Math.sqrt(distSq);
+                            ctx.beginPath(); ctx.strokeStyle = `rgba(255,255,255,${0.15 - dist/800})`;
+                            ctx.lineWidth = 0.5; ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- 6. GLOBAL INTERACTIONS ---
+        function initSpotlightGlassmorphism() {
+            if(window.matchMedia("(pointer: coarse)").matches) return;
+            document.querySelectorAll('.glass-panel').forEach(panel => {
+                panel.addEventListener('mousemove', e => {
+                    const rect = panel.getBoundingClientRect();
+                    panel.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                    panel.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                });
+                panel.addEventListener('mouseleave', () => { panel.style.setProperty('--mouse-x', `-1000px`); panel.style.setProperty('--mouse-y', `-1000px`); });
+            });
+        }
+
+        function initScrollObservers() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        const bars = entry.target.querySelectorAll('.load-bar');
+                        bars.forEach(bar => { bar.style.width = bar.getAttribute('data-width'); });
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+            
+            document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .section-header').forEach(el => observer.observe(el));
+            
+            const prog = document.getElementById('scroll-progress');
+            window.addEventListener('scroll', () => {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                prog.style.width = (winScroll / height) * 100 + "%";
+            });
+        }
+
+        function initNavbarLogic() {
+            const nav = document.getElementById('navbar');
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-links a, .mobile-menu-links a');
+            
+            window.addEventListener('scroll', () => {
+                if(window.scrollY > 50) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+                
+                let current = '';
+                sections.forEach(sec => {
+                    if(window.scrollY >= sec.offsetTop - 300) current = sec.getAttribute('id');
+                });
+                navLinks.forEach(a => {
+                    a.classList.remove('active');
+                    if(a.getAttribute('href').includes(current)) a.classList.add('active');
+                });
+            });
+
+            const btn = document.getElementById('menu-toggle');
+            const overlay = document.getElementById('mobile-menu');
+            const close = document.getElementById('menu-close');
+            
+            btn.addEventListener('click', () => { overlay.classList.add('active'); document.body.style.overflow = 'hidden';});
+            close.addEventListener('click', () => { overlay.classList.remove('active'); document.body.style.overflow = '';});
+            document.querySelectorAll('.mobile-link').forEach(l => {
+                l.addEventListener('click', () => { overlay.classList.remove('active'); document.body.style.overflow = '';});
+            });
+        }
+
+        function initHero3D() {
+            const container = document.getElementById('profile-3d');
+            if(!container || window.matchMedia("(pointer: coarse)").matches) return;
+            document.addEventListener('mousemove', (e) => {
+                const x = (window.innerWidth/2 - e.clientX) / 45;
+                const y = (window.innerHeight/2 - e.clientY) / 45;
+                container.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+            });
+        }
+
+        function initTestimonialSlider() {
+            const slider = document.getElementById('testimonials-slider');
+            let isDown = false, startX, scrollLeft;
+            slider.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft; });
+            slider.addEventListener('mouseleave', () => { isDown = false; });
+            slider.addEventListener('mouseup', () => { isDown = false; });
+            slider.addEventListener('mousemove', (e) => {
+                if(!isDown) return; e.preventDefault();
+                const x = e.pageX - slider.offsetLeft; const walk = (x - startX) * 2;
+                slider.scrollLeft = scrollLeft - walk;
+            });
+        }
+
+        function initTypewriter() {
+            const el = document.getElementById('typewriter-text');
+            const roles = state.data.tagline.split('|').map(r => r.trim());
+            let roleIdx = 0, charIdx = 0, isDeleting = false;
+            
+            function type() {
+                const currentRole = roles[roleIdx];
+                if(isDeleting) {
+                    el.innerText = currentRole.substring(0, charIdx - 1);
+                    charIdx--;
+                } else {
+                    el.innerText = currentRole.substring(0, charIdx + 1);
+                    charIdx++;
+                }
+                
+                let speed = isDeleting ? 50 : 100;
+                if(!isDeleting && charIdx === currentRole.length) { speed = 2000; isDeleting = true; }
+                else if(isDeleting && charIdx === 0) { isDeleting = false; roleIdx = (roleIdx + 1) % roles.length; speed = 500; }
+                setTimeout(type, speed);
+            }
+            if(roles.length > 0) setTimeout(type, 1000);
+        }
+
+        function initContextMenu() {
+            const menu = document.getElementById('context-menu');
+            document.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                let x = e.clientX, y = e.clientY;
+                
+                // Context menu boundary checks to prevent cutting at edges
+                const mw = menu.offsetWidth, mh = menu.offsetHeight;
+                if(x + mw > window.innerWidth) x = window.innerWidth - mw - 10;
+                if(y + mh > window.innerHeight) y = window.innerHeight - mh - 10;
+                
+                menu.style.left = `${x}px`; menu.style.top = `${y}px`;
+                menu.classList.add('active');
+            });
+            document.addEventListener('click', () => { menu.classList.remove('active'); });
+        }
+
+        // --- 7. DATA BINDING & TRANSMISSION ---
+        function applyTheme() {
+            document.documentElement.style.setProperty('--bg-color', state.theme.bg);
+            document.documentElement.style.setProperty('--primary-color', state.theme.primary);
+            document.documentElement.style.setProperty('--secondary-color', state.theme.secondary);
+        }
+
+        function bindDataToDOM() {
+            for (const [key, value] of Object.entries(state.data)) {
+                const el = document.getElementById(`bind-${key}`);
+                if (el) { if (el.tagName === 'IMG') el.src = value; else el.textContent = value; }
+            }
+        }
+
+        // Exposing globally for inline handler
+        window.transmitMessage = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('contact-name').value;
+            const msg = document.getElementById('contact-msg').value;
+            const body = encodeURIComponent(`Hello Rajdeep,\n\n${msg}\n\nFrom: ${name}`);
+            window.location.href = `mailto:ronakksdevelopment@gmail.com?subject=Work Inquiry from ${name}&body=${body}`;
+            showToast("Opening Secure Mail Client...", "fa-paper-plane");
+            e.target.reset();
+        };
+
+        function showToast(message, icon = "fa-check-circle") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 500);
+            }, 3500);
+        }
+
+        // --- 8. ENTERPRISE ADMIN PANEL LOGIC ---
+        const modal = document.getElementById('adminModal');
+        window.openAdminModal = function() { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        window.closeAdminModal = function() { modal.classList.remove('active'); document.body.style.overflow = ''; }
+        
+        window.verifyAdmin = function() {
+            if (document.getElementById('adminUser').value === 'rajdeepsingh' && document.getElementById('adminPass').value === 'deep0ne') {
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'flex';
+                populateAdminFields(); showToast("Cipher Accepted. System Override Granted.", "fa-unlock-keyhole");
+            } else { 
+                const err = document.getElementById('loginError'); err.style.display = 'block';
+                err.animate([{transform: 'translateX(-10px)'},{transform: 'translateX(10px)'},{transform: 'translateX(0)'}], {duration: 300});
+            }
+        }
+
+        // Tab Switching
+        document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.getAttribute('data-target')).classList.add('active');
+            });
+        });
+
+        function populateAdminFields() {
+            document.getElementById('colorBg').value = state.theme.bg; document.getElementById('textBg').value = state.theme.bg;
+            document.getElementById('colorPrimary').value = state.theme.primary; document.getElementById('textPrimary').value = state.theme.primary;
+            document.getElementById('colorSecondary').value = state.theme.secondary; document.getElementById('textSecondary').value = state.theme.secondary;
+            Object.keys(state.data).forEach(k => { const el = document.getElementById(`edit-${k}`); if(el) el.value = state.data[k]; });
+            renderAdminServices(); renderAdminTimeline(); renderAdminSkills(); renderAdminProjects();
+        }
+
+        // Theme Updates
+        window.updateTheme = function(varName, val) {
+            document.documentElement.style.setProperty(`--${varName}`, val);
+            if(varName === 'bg-color') { state.theme.bg = val; document.getElementById('colorBg').value = val; document.getElementById('textBg').value = val; }
+            if(varName === 'primary-color') { state.theme.primary = val; document.getElementById('colorPrimary').value = val; document.getElementById('textPrimary').value = val; }
+            if(varName === 'secondary-color') { state.theme.secondary = val; document.getElementById('colorSecondary').value = val; document.getElementById('textSecondary').value = val; }
+        }
+        window.saveTheme = function() { localStorage.setItem('rs_theme', JSON.stringify(state.theme)); showToast("Theme Matrix Successfully Updated.", "fa-paint-roller"); }
+        window.resetTheme = function() { state.theme = {...defaultTheme}; applyTheme(); populateAdminFields(); saveTheme(); showToast("System Rebooted to Default Aesthetics.", "fa-rotate-left");}
+
+        // Text Updates
+        window.updateText = function(key, val) { state.data[key] = val; const el = document.getElementById(`bind-${key}`); if(el) el.textContent = val; }
+        window.updateImg = function(key, val) { state.data[key] = val; const el = document.getElementById(`bind-${key}`); if(el) el.src = val; }
+        window.saveData = function() { localStorage.setItem('rs_data', JSON.stringify(state.data)); showToast("Identity Protocols Securely Saved.", "fa-database"); initTypewriter(); }
+
+        // Array Management Functions
+        function renderAdminServices() {
+            document.getElementById('admin-services-list').innerHTML = state.services.map(s => `
+                <div class="admin-list-item"><div class="delete-btn" onclick="deleteService(${s.id})"><i class="fa-solid fa-trash"></i></div><h4 style="color:#fff;">${s.title}</h4><p style="color:var(--text-muted); font-size:0.9rem;">${s.desc}</p></div>
+            `).join('');
+        }
+        window.addService = function() {
+            const title = document.getElementById('newSrvTitle').value, icon = document.getElementById('newSrvIcon').value, desc = document.getElementById('newSrvDesc').value, skills = document.getElementById('newSrvSkills').value.split(',');
+            if(!title || !desc) { showToast("Missing Service Parameters.", "fa-triangle-exclamation"); return; }
+            state.services.push({ id: Date.now(), title, icon: icon||'fa-solid fa-code', desc, skills });
+            localStorage.setItem('rs_services', JSON.stringify(state.services)); renderServices(); renderAdminServices(); showToast("Service Node Injected.", "fa-server");
+        }
+        window.deleteService = function(id) { state.services = state.services.filter(x => x.id !== id); localStorage.setItem('rs_services', JSON.stringify(state.services)); renderServices(); renderAdminServices(); }
+
+        function renderAdminTimeline() {
+            document.getElementById('admin-timeline-list').innerHTML = state.timeline.map(t => `
+                <div class="admin-list-item"><div class="delete-btn" onclick="deleteTimeline(${t.id})"><i class="fa-solid fa-trash"></i></div><h4 style="color:#fff;">${t.role} <span style="color:var(--secondary-color); font-size:0.8rem;">(${t.year})</span></h4><p style="color:var(--text-muted); font-size:0.9rem;">${t.comp}</p></div>
+            `).join('');
+        }
+        window.addTimeline = function() {
+            const year = document.getElementById('newTimeYear').value, role = document.getElementById('newTimeRole').value, comp = document.getElementById('newTimeComp').value, desc = document.getElementById('newTimeDesc').value;
+            if(!year || !role) return; state.timeline.push({ id: Date.now(), year, role, comp, desc }); localStorage.setItem('rs_timeline', JSON.stringify(state.timeline)); renderTimeline(); renderAdminTimeline(); showToast("Milestone Injected.", "fa-timeline");
+        }
+        window.deleteTimeline = function(id) { state.timeline = state.timeline.filter(x => x.id !== id); localStorage.setItem('rs_timeline', JSON.stringify(state.timeline)); renderTimeline(); renderAdminTimeline(); }
+
+        function renderAdminSkills() {
+            document.getElementById('admin-skills-list').innerHTML = state.skills.map(s => `
+                <div class="admin-list-item" style="padding: 15px;"><div class="delete-btn" style="top:10px; right:10px; width:35px; height:35px;" onclick="deleteSkill(${s.id})"><i class="fa-solid fa-trash"></i></div><h4 style="color:#fff;">${s.name} <span style="color:var(--secondary-color);">(${s.percent}%)</span></h4></div>
+            `).join('');
+        }
+        window.addSkill = function() {
+            const name = document.getElementById('newSkillName').value, percent = document.getElementById('newSkillPer').value;
+            if(!name || !percent) return; state.skills.push({ id: Date.now(), name, percent }); localStorage.setItem('rs_skills', JSON.stringify(state.skills)); renderSkills(); renderAdminSkills(); showToast("Skill Added.", "fa-crosshairs");
+        }
+        window.deleteSkill = function(id) { state.skills = state.skills.filter(x => x.id !== id); localStorage.setItem('rs_skills', JSON.stringify(state.skills)); renderSkills(); renderAdminSkills(); }
+
+        function renderAdminProjects() {
+            document.getElementById('admin-projects-list').innerHTML = state.projects.map(p => `
+                <div class="admin-list-item"><div class="delete-btn" onclick="deleteProject(${p.id})"><i class="fa-solid fa-trash"></i></div><h4 style="color:#fff;">[${p.tag}] ${p.title}</h4><p style="color:var(--text-muted); font-size:0.9rem;">${p.desc}</p></div>
+            `).join('');
+        }
+        window.addProject = function() {
+            const title = document.getElementById('newProjTitle').value, img = document.getElementById('newProjImg').value, link = document.getElementById('newProjLink').value, desc = document.getElementById('newProjDesc').value, tag = document.getElementById('newProjTag').value;
+            if(!title || !img || !desc) { showToast("Deployment Failed: Missing Parameters.", "fa-triangle-exclamation"); return; }
+            state.projects.push({ id: Date.now(), tag, title, img, link: link || '#', desc });
+            localStorage.setItem('rs_projects', JSON.stringify(state.projects)); renderProjects(); renderAdminProjects(); showToast("New Construct Successfully Deployed.", "fa-rocket");
+        }
+        window.deleteProject = function(id) { state.projects = state.projects.filter(p => p.id !== id); localStorage.setItem('rs_projects', JSON.stringify(state.projects)); renderProjects(); renderAdminProjects(); showToast("Construct Erased.", "fa-eraser"); }
+
+    </script>
+</body>
+</html>
